@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
     const numberDisplay = document.getElementById('number-display');
     const timerDisplay = document.getElementById('timer-display');
     const inputSection = document.getElementById('input-section');
@@ -8,14 +9,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedback = document.getElementById('feedback');
     const levelDisplay = document.getElementById('level');
     const scoreDisplay = document.getElementById('score');
+    const highScoreDisplay = document.getElementById('high-score');
+    const levelProgress = document.getElementById('level-progress');
+    
+    // Settings and modals
+    const settingsBtn = document.getElementById('settings-btn');
+    const helpBtn = document.getElementById('help-btn');
+    const soundBtn = document.getElementById('sound-btn');
+    const settingsPanel = document.getElementById('settings-panel');
+    const helpPanel = document.getElementById('help-panel');
+    const closeSettings = document.getElementById('close-settings');
+    const closeHelp = document.getElementById('close-help');
+    const difficultySelect = document.getElementById('difficulty');
+    const themeSelect = document.getElementById('theme');
 
+    // Game state variables
     let currentNumber = '';
     let level = 1;
     let score = 0;
+    let highScore = localStorage.getItem('highScore') || 0;
     let timer;
+    let soundEnabled = true;
+    let difficulty = 'medium';
+    let currentTheme = 'blue';
+    
+    // Sound effects
+    const sounds = {
+        correct: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3'),
+        incorrect: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
+        levelUp: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3'),
+        countdown: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-tick-tock-timer-1045.mp3'),
+        gameStart: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-approved-mission-205.mp3')
+    };
+    
+    // Initialize high score display
+    highScoreDisplay.textContent = highScore;
 
     function generateNumber(level) {
-        const length = level + 1;
+        // Adjust number length based on difficulty
+        let length;
+        switch(difficulty) {
+            case 'easy':
+                length = level + 1;
+                break;
+            case 'medium':
+                length = level + 2;
+                break;
+            case 'hard':
+                length = level + 3;
+                break;
+            default:
+                length = level + 1;
+        }
+        
         let number = '';
         for (let i = 0; i < length; i++) {
             number += Math.floor(Math.random() * 10);
@@ -24,16 +70,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNumber() {
+        // Play game start sound
+        playSound('gameStart');
+        
         currentNumber = generateNumber(level);
         numberDisplay.textContent = currentNumber;
         numberDisplay.classList.remove('hidden');
         numberDisplay.classList.add('visible');
-        let timeLeft = 3;
+        
+        // Set display time based on difficulty
+        let displayTime;
+        switch(difficulty) {
+            case 'easy':
+                displayTime = 5;
+                break;
+            case 'medium':
+                displayTime = 3;
+                break;
+            case 'hard':
+                displayTime = 2;
+                break;
+            default:
+                displayTime = 3;
+        }
+        
+        let timeLeft = displayTime;
         timerDisplay.textContent = timeLeft;
+        timerDisplay.classList.remove('urgent');
 
         timer = setInterval(() => {
             timeLeft--;
             timerDisplay.textContent = timeLeft;
+            
+            // Play countdown sound
+            playSound('countdown');
+            
+            // Add urgent class when time is running out
+            if (timeLeft <= 1) {
+                timerDisplay.classList.add('urgent');
+            }
+            
             if (timeLeft === 0) {
                 clearInterval(timer);
                 hideNumber();
@@ -45,30 +121,65 @@ document.addEventListener('DOMContentLoaded', () => {
         numberDisplay.classList.remove('visible');
         numberDisplay.classList.add('hidden');
         timerDisplay.textContent = '';
+        timerDisplay.classList.remove('urgent');
         inputSection.classList.remove('hidden');
         inputSection.classList.add('visible');
         numberInput.focus();
+        
+        // Add animation to input section
+        inputSection.style.animation = 'none';
+        setTimeout(() => {
+            inputSection.style.animation = 'slideIn 0.5s ease-out';
+        }, 10);
     }
 
     function checkAnswer() {
         const userAnswer = numberInput.value;
+        if (!userAnswer) return; // Don't proceed if input is empty
+        
         feedback.classList.remove('hidden');
         feedback.classList.add('visible');
 
         if (userAnswer === currentNumber) {
-            feedback.textContent = 'Correct!';
-            feedback.className = 'correct';
+            // Correct answer
+            playSound('correct');
+            feedback.innerHTML = '<i class="fas fa-check-circle"></i> Correct!';
+            feedback.className = 'correct visible';
             score += level * 10;
             level++;
+            
+            // Play level up sound if advancing to a new level
+            if (level % 3 === 0) {
+                playSound('levelUp');
+            }
+            
+            // Update high score if needed
+            if (score > highScore) {
+                highScore = score;
+                highScoreDisplay.textContent = highScore;
+                localStorage.setItem('highScore', highScore);
+                
+                // Animate high score
+                highScoreDisplay.parentElement.style.animation = 'pulse 0.5s';
+                setTimeout(() => {
+                    highScoreDisplay.parentElement.style.animation = '';
+                }, 500);
+            }
         } else {
-            feedback.textContent = `Wrong! The number was ${currentNumber}`;
-            feedback.className = 'incorrect';
+            // Incorrect answer
+            playSound('incorrect');
+            feedback.innerHTML = `<i class="fas fa-times-circle"></i> Wrong! The number was ${currentNumber}`;
+            feedback.className = 'incorrect visible';
             level = Math.max(1, level - 1);
         }
 
+        // Update displays
         scoreDisplay.textContent = score;
         levelDisplay.textContent = level;
         numberInput.value = '';
+        
+        // Update progress bar
+        updateProgressBar();
 
         setTimeout(() => {
             feedback.classList.remove('visible');
@@ -79,6 +190,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
 
+    // Helper function to play sounds
+    function playSound(soundName) {
+        if (soundEnabled && sounds[soundName]) {
+            sounds[soundName].currentTime = 0;
+            sounds[soundName].play().catch(e => console.log('Error playing sound:', e));
+        }
+    }
+    
+    // Update progress bar based on level
+    function updateProgressBar() {
+        const progressPercentage = ((level - 1) % 5) * 20;
+        levelProgress.style.width = `${progressPercentage}%`;
+    }
+    
+    // Apply theme changes
+    function applyTheme(theme) {
+        const root = document.documentElement;
+        switch(theme) {
+            case 'dark':
+                document.body.style.background = 'linear-gradient(-45deg, #2c3e50, #34495e, #2c3e50, #34495e)';
+                break;
+            case 'light':
+                document.body.style.background = 'linear-gradient(-45deg, #3498db, #9b59b6, #f1c40f, #e74c3c)';
+                break;
+            case 'blue':
+            default:
+                document.body.style.background = 'linear-gradient(-45deg, #3498db, #2980b9, #1abc9c, #16a085)';
+                break;
+        }
+        document.body.style.backgroundSize = '400% 400%';
+        document.body.style.animation = 'gradient 15s ease infinite';
+        currentTheme = theme;
+    }
+    
+    // Toggle modals
+    function toggleModal(modal) {
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+            modal.classList.add('visible');
+        } else {
+            modal.classList.remove('visible');
+            modal.classList.add('hidden');
+        }
+    }
+
+    // Event Listeners
     startBtn.addEventListener('click', () => {
         startBtn.style.display = 'none';
         showNumber();
@@ -91,4 +248,36 @@ document.addEventListener('DOMContentLoaded', () => {
             checkAnswer();
         }
     });
+    
+    // Settings panel events
+    settingsBtn.addEventListener('click', () => toggleModal(settingsPanel));
+    closeSettings.addEventListener('click', () => toggleModal(settingsPanel));
+    
+    // Help panel events
+    helpBtn.addEventListener('click', () => toggleModal(helpPanel));
+    closeHelp.addEventListener('click', () => toggleModal(helpPanel));
+    
+    // Sound toggle
+    soundBtn.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+            soundBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        } else {
+            soundBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        }
+    });
+    
+    // Difficulty change
+    difficultySelect.addEventListener('change', (e) => {
+        difficulty = e.target.value;
+    });
+    
+    // Theme change
+    themeSelect.addEventListener('change', (e) => {
+        applyTheme(e.target.value);
+    });
+    
+    // Initialize game
+    updateProgressBar();
+    applyTheme(currentTheme);
 });

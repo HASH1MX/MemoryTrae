@@ -5,11 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Number Memory Game</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="game-container">
-        <div id="level-display">Level: <span id="level">1</span></div>
-        <div id="score-display">Score: <span id="score">0</span></div>
+        <h1 class="game-title">Memory<span>Trae</span></h1>
+        
+        <div class="stats-container">
+            <div id="level-display"><i class="fas fa-layer-group"></i> Level: <span id="level">1</span></div>
+            <div id="score-display"><i class="fas fa-star"></i> Score: <span id="score">0</span></div>
+            <div id="high-score-display"><i class="fas fa-trophy"></i> Best: <span id="high-score">0</span></div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="level-progress"></div>
+        </div>
         
         <div id="number-display" class="hidden"></div>
         <div id="timer-display"></div>
@@ -18,11 +28,51 @@
             <h2>What was the number?</h2>
             <p class="subtitle">Press enter to submit</p>
             <input type="number" id="number-input" autocomplete="off">
-            <button id="submit-btn">Submit</button>
+            <button id="submit-btn"><i class="fas fa-check"></i> Submit</button>
         </div>
         
         <div id="feedback" class="hidden"></div>
-        <button id="start-btn">Start Game</button>
+        <button id="start-btn"><i class="fas fa-play"></i> Start Game</button>
+        
+        <div class="game-controls">
+            <button id="settings-btn" class="control-btn"><i class="fas fa-cog"></i></button>
+            <button id="help-btn" class="control-btn"><i class="fas fa-question"></i></button>
+            <button id="sound-btn" class="control-btn"><i class="fas fa-volume-up"></i></button>
+        </div>
+        
+        <div id="settings-panel" class="modal hidden">
+            <div class="modal-content">
+                <h2>Settings</h2>
+                <div class="setting-item">
+                    <label for="difficulty">Difficulty:</label>
+                    <select id="difficulty">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="theme">Theme:</label>
+                    <select id="theme">
+                        <option value="blue" selected>Blue</option>
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                    </select>
+                </div>
+                <button id="close-settings">Close</button>
+            </div>
+        </div>
+        
+        <div id="help-panel" class="modal hidden">
+            <div class="modal-content">
+                <h2>How to Play</h2>
+                <p>Memorize the number that appears on screen.</p>
+                <p>After the timer ends, enter the number you saw.</p>
+                <p>Each correct answer increases your level and score.</p>
+                <p>Each incorrect answer decreases your level.</p>
+                <button id="close-help">Got it!</button>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
