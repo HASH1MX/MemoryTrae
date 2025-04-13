@@ -1,0 +1,24 @@
+{
+  "name": "memorytrae",
+  "version": "1.0.0",
+  "description": "This guide will help you install Node.js and npm (Node Package Manager) on your Windows system.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "http-server -o"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HASH1MX/MemoryTrae.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HASH1MX/MemoryTrae/issues"
+  },
+  "homepage": "https://github.com/HASH1MX/MemoryTrae#readme",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
