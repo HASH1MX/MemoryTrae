@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeHelp = document.getElementById('close-help');
     const difficultySelect = document.getElementById('difficulty');
     const themeSelect = document.getElementById('theme');
+    const volumeControl = document.getElementById('volume-control');
+    const volumeValue = document.getElementById('volume-value');
 
     // Game state variables
     let currentNumber = '';
@@ -41,6 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
         countdown: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-tick-tock-timer-1045.mp3'),
         gameStart: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-approved-mission-205.mp3')
     };
+    
+    // Volume control
+    let volumeLevel = 1.0; // Default volume level (100%)
     
     // Initialize high score display
     highScoreDisplay.textContent = highScore;
@@ -193,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper function to play sounds
     function playSound(soundName) {
         if (soundEnabled && sounds[soundName]) {
+            sounds[soundName].volume = volumeLevel;
             sounds[soundName].currentTime = 0;
             sounds[soundName].play().catch(e => console.log('Error playing sound:', e));
         }
@@ -229,15 +235,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modal.classList.contains('hidden')) {
             modal.classList.remove('hidden');
             modal.classList.add('visible');
+            // Ensure modal is displayed
+            modal.style.display = 'flex';
         } else {
             modal.classList.remove('visible');
             modal.classList.add('hidden');
+            // Hide modal after transition
+            setTimeout(() => {
+                if (modal.classList.contains('hidden')) {
+                    modal.style.display = 'none';
+                }
+            }, 300);
         }
     }
 
     // Event Listeners
-    startBtn.addEventListener('click', () => {
+    startBtn.addEventListener('click', function() {
+        // Hide the start button
         startBtn.style.display = 'none';
+        // Reset any previous game state if needed
+        feedback.classList.remove('visible');
+        feedback.classList.add('hidden');
+        // Start the game by showing the number
         showNumber();
     });
 
@@ -275,6 +294,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Theme change
     themeSelect.addEventListener('change', (e) => {
         applyTheme(e.target.value);
+    });
+    
+    // Volume control
+    volumeControl.addEventListener('input', (e) => {
+        volumeLevel = e.target.value / 100;
+        volumeValue.textContent = `${e.target.value}%`;
+        
+        // Play a short sound to preview volume level
+        if (soundEnabled) {
+            playSound('correct');
+        }
     });
     
     // Initialize game
