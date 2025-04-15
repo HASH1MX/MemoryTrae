@@ -35,20 +35,60 @@ document.addEventListener('DOMContentLoaded', () => {
     let difficulty = 'medium';
     let currentTheme = 'blue';
     
-    // Sound effects
+    // Sound effects - simplified implementation that won't break the game
     const sounds = {
-        correct: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3'),
-        incorrect: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
-        levelUp: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3'),
-        countdown: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-tick-tock-timer-1045.mp3'),
-        gameStart: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-approved-mission-205.mp3')
+        correct: null,
+        incorrect: null,
+        levelUp: null,
+        countdown: null,
+        gameStart: null
     };
+    
+    // Sound URLs
+    const soundUrls = {
+        correct: 'https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3',
+        incorrect: 'https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3',
+        levelUp: 'https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3',
+        countdown: 'https://assets.mixkit.co/sfx/preview/mixkit-tick-tock-timer-1045.mp3',
+        gameStart: 'https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-approved-mission-205.mp3'
+    };
+    
+    // Function to safely load sounds
+    function loadSounds() {
+        // Create audio objects for each sound
+        for (const [key, url] of Object.entries(soundUrls)) {
+            try {
+                const audio = new Audio();
+                
+                // Add error handling
+                audio.addEventListener('error', () => {
+                    console.log(`Error loading sound: ${key}`);
+                    // We'll continue without this sound
+                    sounds[key] = null;
+                });
+                
+                // Only set the source after adding the error listener
+                audio.src = url;
+                sounds[key] = audio;
+                
+                // Preload the audio
+                audio.load();
+            } catch (e) {
+                console.log(`Exception creating audio for ${key}:`, e);
+                // Continue without this sound
+                sounds[key] = null;
+            }
+        }
+    }
     
     // Volume control
     let volumeLevel = 1.0; // Default volume level (100%)
     
     // Initialize high score display
     highScoreDisplay.textContent = highScore;
+    
+    // Load sounds
+    loadSounds();
 
     function generateNumber(level) {
         // Adjust number length based on difficulty
@@ -75,6 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNumber() {
+        // Clear any existing timer to prevent multiple timers running
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+        
         // Play game start sound
         playSound('gameStart');
         
@@ -123,6 +169,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function hideNumber() {
+        // Clear the timer if it's still running
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+        
         numberDisplay.classList.remove('visible');
         numberDisplay.classList.add('hidden');
         timerDisplay.textContent = '';
@@ -195,12 +247,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
 
-    // Helper function to play sounds
+    // Helper function to play sounds with robust error handling
     function playSound(soundName) {
-        if (soundEnabled && sounds[soundName]) {
-            sounds[soundName].volume = volumeLevel;
-            sounds[soundName].currentTime = 0;
-            sounds[soundName].play().catch(e => console.log('Error playing sound:', e));
+        // Skip if sound is disabled or the sound object doesn't exist
+        if (!soundEnabled || !sounds[soundName]) return;
+        
+        try {
+            // Only attempt to play if the sound is actually loaded
+            if (sounds[soundName] && sounds[soundName].readyState >= 2) {
+                sounds[soundName].volume = volumeLevel;
+                sounds[soundName].currentTime = 0;
+                
+                // Use Promise with proper error handling
+                sounds[soundName].play()
+                    .catch(e => {
+                        console.log('Error playing sound:', e);
+                        // Continue game flow even if sound fails
+                    });
+            }
+        } catch (error) {
+            console.log('Sound playback error:', error);
+            // Game continues even if sound system completely fails
         }
     }
     
@@ -256,6 +323,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset any previous game state if needed
         feedback.classList.remove('visible');
         feedback.classList.add('hidden');
+        // Clear any existing timer
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
         // Start the game by showing the number
         showNumber();
     });
