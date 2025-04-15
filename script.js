@@ -215,14 +215,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const root = document.documentElement;
         switch(theme) {
             case 'dark':
-                document.body.style.background = 'linear-gradient(-45deg, #2c3e50, #34495e, #2c3e50, #34495e)';
+                document.body.style.background = 'linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e)';
                 break;
             case 'light':
-                document.body.style.background = 'linear-gradient(-45deg, #3498db, #9b59b6, #f1c40f, #e74c3c)';
+                document.body.style.background = 'linear-gradient(-45deg, #ff9a8b, #ff6a88, #ff99ac, #fcb69f)';
                 break;
             case 'blue':
             default:
-                document.body.style.background = 'linear-gradient(-45deg, #3498db, #2980b9, #1abc9c, #16a085)';
+                document.body.style.background = 'linear-gradient(-45deg, #4facfe, #00f2fe, #0099ff, #6a11cb)';
                 break;
         }
         document.body.style.backgroundSize = '400% 400%';
