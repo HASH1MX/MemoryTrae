@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded and parsed');
     // DOM Elements
     const numberDisplay = document.getElementById('number-display');
     const timerDisplay = document.getElementById('timer-display');
@@ -6,6 +7,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const numberInput = document.getElementById('number-input');
     const submitBtn = document.getElementById('submit-btn');
     const startBtn = document.getElementById('start-btn');
+    
+    // Ensure the start button is visible and properly styled
+    if (startBtn) {
+        startBtn.style.display = 'block';
+        startBtn.style.opacity = '1';
+        startBtn.style.pointerEvents = 'auto';
+    } else {
+        console.error('Start button not found in the DOM!');
+    }
     const feedback = document.getElementById('feedback');
     const levelDisplay = document.getElementById('level');
     const scoreDisplay = document.getElementById('score');
@@ -317,9 +327,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
-    startBtn.addEventListener('click', function() {
+    console.log('Start button element:', startBtn);
+    
+    // Remove any existing event listeners to prevent duplicates
+    const newStartBtn = startBtn.cloneNode(true);
+    startBtn.parentNode.replaceChild(newStartBtn, startBtn);
+    
+    // Re-assign the variable to the new button
+    const refreshedStartBtn = document.getElementById('start-btn');
+    
+    // Add the event listener to the fresh button
+    refreshedStartBtn.addEventListener('click', function() {
+        console.log('Start button clicked');
         // Hide the start button
-        startBtn.style.display = 'none';
+        this.style.display = 'none';
         // Reset any previous game state if needed
         feedback.classList.remove('visible');
         feedback.classList.add('hidden');
@@ -331,6 +352,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Start the game by showing the number
         showNumber();
     });
+    
+    // Make sure the button is visible and clickable
+    refreshedStartBtn.style.display = 'block';
+    refreshedStartBtn.style.opacity = '1';
+    refreshedStartBtn.style.pointerEvents = 'auto';
 
     submitBtn.addEventListener('click', checkAnswer);
 
