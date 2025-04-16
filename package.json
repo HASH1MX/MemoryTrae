@@ -5,7 +5,10 @@
   "main": "script.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "http-server -o"
+    "start": "http-server -o",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d .",
+    "build": "echo \"No build step required\""
   },
   "repository": {
     "type": "git",
@@ -17,8 +20,9 @@
   "bugs": {
     "url": "https://github.com/HASH1MX/MemoryTrae/issues"
   },
-  "homepage": "https://github.com/HASH1MX/MemoryTrae#readme",
+  "homepage": "https://hash1mx.github.io/MemoryTrae/",
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "gh-pages": "^6.1.0"
   }
 }
